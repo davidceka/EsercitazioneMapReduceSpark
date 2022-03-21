@@ -1,0 +1,1 @@
+hdfs dfs -cat /output3/finali/part-r-00000

@@ -1,0 +1,14 @@
+javac -cp $(hadoop classpath) -d build src/*
+
+jar cvf ProvaEsercitazione.jar -C build .
+
+
+hadoop jar ProvaEsercitazione.jar WordCountDriver /sample_us.tsv /output4
+
+hdfs dfs -ls /output4
+hdfs dfs -cat /output4/part-r-00000
+
+amazon_reviews_us_Video_Games_v1_00.tsv
+
+
+ /output3/partials/part-r-00001 /output3/partials/part-r-00002 /output3/partials/part-r-00003 /output3/partials/part-r-00004 /output3/partials/part-r-00005 /output3/partials/part-r-00006 /output3/partials/part-r-00007 /output3/partials/part-r-00008 /output3/partials/part-r-00009 /output3/partials/part-r-00010 /output3/partials/part-r-00011 
