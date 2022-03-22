@@ -14,8 +14,8 @@ def script():
 
     rec_valide = testo.filter(lambda line: line.split[11]=="Y")
 
-    
 
+    # GUARDARE pysparksql per maneggiare i file, visto che è sicuramente più veloce
 
 
     lista_risultato = []
