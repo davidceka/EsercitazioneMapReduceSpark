@@ -1,0 +1,1 @@
+Per eseguire lo script: PYTHONSTARTUP=/path/to/script/script.py pyspark
