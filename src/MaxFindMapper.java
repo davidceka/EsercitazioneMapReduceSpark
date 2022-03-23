@@ -15,7 +15,7 @@ public class MaxFindMapper extends Mapper<LongWritable, Text, Text, IntWritable>
 		String[] riga = value.toString().split("\t"); // converto in String perchè non lavoriamo con i Text
 		
 		context.write(new Text(riga[0]), new IntWritable(Integer.parseInt(riga[1])));
-	}; 
+	}; 	
 }
 
 

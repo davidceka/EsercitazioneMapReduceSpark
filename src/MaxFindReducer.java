@@ -35,6 +35,8 @@ public class MaxFindReducer extends Reducer<Text, IntWritable, Text, IntWritable
 	public void cleanup(Context context) throws IOException,InterruptedException{
              
             context.write(new Text(maxKey.toString().substring(1)), new IntWritable(maxValue));
+
+			//context.write(new Text(maxKey.toString().charAt(0)-48+"\t"+maxKey.toString().substring(1)), new IntWritable(maxValue));
     }
 
 }
