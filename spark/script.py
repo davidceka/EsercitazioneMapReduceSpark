@@ -26,11 +26,15 @@ def func2(listaparole1, listaparole2):
    return listafinale
 
 def func3(elemento):
-    lista_parole = elemento[1]
-    piu_freq = max(set(lista_parole), key= lista_parole.count)
-    quante_volte = lista_parole.count(piu_freq)
+    lista_parole = [].extend(elemento[1])
+    parola_e_occ = {}
+    for parola in set(lista_parole):
+        contatore = lista_parole.count(parola)
+        parola_e_occ.update({parola: contatore})
+    
+    parola_max = max(parola_e_occ, key= parola_e_occ.get)
 
-    return elemento[0], piu_freq, quante_volte
+    return elemento[0], parola_max, parola_e_occ[parola_max]
     
 spark = SparkSession \
 .builder \
@@ -40,7 +44,7 @@ spark = SparkSession \
 
 sc = spark.sparkContext
 #testo_con_header = sc.textFile("/home/andrea/Desktop/ChallengeBDA/dataset/amazon_reviews_us_Video_Games_v1_00.tsv",48)
-testo_con_header = sc.textFile("/home/dave/EsercitazioneMapReduceSPark/spark/amazon_reviews_us_Video_Games_v1_00.tsv", 48)
+testo_con_header = sc.textFile("/home/dave/EsercitazioneMapReduceSPark/spark/sample_us.tsv", 48)
 header = testo_con_header.first()
 testo = testo_con_header.filter(lambda line: line!=header)
 
@@ -52,10 +56,10 @@ prodotti = valid_parts.map(lambda p: Row(product_title=p[5],star_rating=int(p[7]
 
 df_prodotti = spark.createDataFrame(prodotti)
 
-prova=valid_parts.map(lambda line: func(line))
-prova2 = prova.reduceByKey(func2)
-prova3 = prova2.map(lambda e: func3(e)).map(lambda p: Row(product_title=p[0], max_parola=p[1], max_occ=p[2]))
-
+prova = valid_parts.map(lambda line: func(line))
+prova2 = prova.reduceByKey(func2, 48)
+prova3 = prova2.flatMap(lambda a: (a[0], a[1]))
+prova3 = prova2.map(lambda e: func3(e), preservesPartitioning=True).map(lambda p: Row(product_title=p[0], max_parola=p[1], max_occ=p[2]))
 
 df_prova = spark.createDataFrame(prova3)
 
