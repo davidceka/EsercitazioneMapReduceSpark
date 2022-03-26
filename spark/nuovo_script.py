@@ -39,7 +39,8 @@ df_testo_joined = df_review_body_filtered.union(df_review_headline_filtered)
 df_testo_contato = df_testo_joined.groupBy('product_title_key', 'parola').agg(count('*').alias('occorrenza')).cache()
 #df_testo_contato = df_testo_joined.groupBy('product_title_key', 'parola').agg(count('*').alias('conteggio'),max('parola').alias('parola_piu_frequente'))
 df_contato_maxed = df_testo_contato.groupBy('product_title_key').agg(max('occorrenza').alias('max_occorrenza'))
-df_contato_joined = df_contato_maxed.join(df_testo_contato, (df_contato_maxed.product_title_key==df_testo_contato.product_title_key)&(df_contato_maxed.max_occorrenza==df_testo_contato.occorrenza), "inner")
+df_contato_maxed = df_contato_maxed.withColumnRenamed('product_title_key', 'new_ptk')
+df_contato_joined = df_contato_maxed.join(df_testo_contato, (df_contato_maxed.new_ptk==df_testo_contato.product_title_key)&(df_contato_maxed.max_occorrenza==df_testo_contato.occorrenza), "inner")
 
 # df_prova = df_testo_joined.withColumn('count', col('count')).groupBy('parola','product_title_key').agg({'count': 'count'}).select('product_title_key', 'parola', 'count')
 
