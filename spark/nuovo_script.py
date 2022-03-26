@@ -1,6 +1,6 @@
 from itertools import count
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import explode, col, length, count, max
+from pyspark.sql.functions import explode, col, length, count, max, round
 from pyspark.sql.types import Row
 
 
@@ -46,9 +46,10 @@ df_contato_maxed = df_contato_maxed.withColumnRenamed('product_title_key', 'new_
 df_contato_joined = df_contato_maxed.join(df_testo_contato, (df_contato_maxed.new_ptk==df_testo_contato.product_title_key)&(df_contato_maxed.max_occorrenza==df_testo_contato.occorrenza), "inner")
 
 parziale=df_contato_joined.select("new_ptk","parola","occorrenza")
-tabella_average=spark.sql("SELECT first(conteggio_pt),avg(star_rating),product_title_key FROM prodotti group by product_title_key")
-finale=parziale.join(tabella_average,parziale.new_ptk==tabella_average.product_title_key).select("product_title_key","avg(star_rating)","conteggio_pt","parola","occorrenza")
+tabella_average=spark.sql("SELECT first(conteggio_pt) as occorrenze_product_title,avg(star_rating),product_title_key FROM prodotti group by product_title_key")
+finale=parziale.join(tabella_average,parziale.new_ptk==tabella_average.product_title_key).select("product_title_key",round("avg(star_rating)",1).alias("avg(star_rating)"),"occorrenze_product_title","parola","occorrenza").orderBy(["product_title_key","occorrenze_product_title"],ascending=False)
 
+finale.show(50)
 # df_prova = df_testo_joined.withColumn('count', col('count')).groupBy('parola','product_title_key').agg({'count': 'count'}).select('product_title_key', 'parola', 'count')
 
 # select product_title_key,parola,count(parola) as conteggio
