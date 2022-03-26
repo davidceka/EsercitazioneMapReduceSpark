@@ -11,8 +11,8 @@ spark = SparkSession \
 .getOrCreate()
 
 sc = spark.sparkContext
-testo = sc.textFile("/home/andrea/Desktop/ChallengeBDA/dataset/amazon_reviews_us_Video_Games_v1_00.tsv",48)
-#testo = sc.textFile("/home/dave/EsercitazioneMapReduceSPark/spark/amazon_reviews_us_Video_Games_v1_00.tsv", 48)
+#testo = sc.textFile("/home/andrea/Desktop/ChallengeBDA/dataset/amazon_reviews_us_Video_Games_v1_00.tsv",48)
+testo = sc.textFile("/home/dave/EsercitazioneMapReduceSPark/spark/amazon_reviews_us_Video_Games_v1_00.tsv", 48)
 header = testo.first()
 testo_no_headline = testo.map(lambda l: l.split("\t")).filter(lambda line: (line!=header and line[11]=="Y"))
 testo_rdd = testo_no_headline.map(lambda p: Row(product_title_key=p[5],
@@ -47,10 +47,13 @@ df_contato_joined = df_contato_maxed.join(df_testo_contato, (df_contato_maxed.ne
 
 parziale=df_contato_joined.select("new_ptk","parola","occorrenza")
 tabella_average=spark.sql("SELECT first(conteggio_pt) as occorrenze_product_title,avg(star_rating),product_title_key FROM prodotti group by product_title_key")
-finale=parziale.join(tabella_average,parziale.new_ptk==tabella_average.product_title_key).select("product_title_key",round("avg(star_rating)",1).alias("avg(star_rating)"),"occorrenze_product_title","parola","occorrenza").orderBy(["product_title_key","occorrenze_product_title"],ascending=False)
+finale=parziale.join(tabella_average,parziale.new_ptk==tabella_average.product_title_key).select("product_title_key",round("avg(star_rating)",1).alias("avg(star_rating)"),"occorrenze_product_title","parola","occorrenza").sort(col("avg(star_rating)"),col("occorrenze_product_title"), ascending=[0,0])
+
+
 
 finale.show(50)
-# df_prova = df_testo_joined.withColumn('count', col('count')).groupBy('parola','product_title_key').agg({'count': 'count'}).select('product_title_key', 'parola', 'count')
+exit()
+#df_prova = df_testo_joined.withColumn('count', col('count')).groupBy('parola','product_title_key').agg({'count': 'count'}).select('product_title_key', 'parola', 'count')
 
 # select product_title_key,parola,count(parola) as conteggio
 # from tabella
