@@ -1,5 +1,6 @@
+from itertools import count
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import explode, col, length
+from pyspark.sql.functions import explode, col, length, count
 from pyspark.sql.types import Row
 
 
@@ -29,7 +30,9 @@ df_review_body = df_testo.select(df_testo.product_title_key, explode(df_testo.re
 df_review_headline_filtered = df_review_headline.join(df_product_title, ['product_title_key', 'parola'], "leftanti")
 df_review_body_filtered = df_review_body.join(df_product_title, ['product_title_key', 'parola'], "leftanti")
 
-df_testo_joined = df_review_body_filtered.join(df_review_body_filtered, ['product_title_key', 'parola'], "inner")
+df_testo_joined = df_review_body_filtered.union(df_review_headline_filtered)
+
+df_testo_contato = df_testo_joined.groupBy('product_title_key', 'parola').agg(count('*').alias('occorrenza')).orderBy('product_title_key', 'occorrenza')
 
 # df_prova = df_testo_joined.withColumn('count', col('count')).groupBy('parola','product_title_key').agg({'count': 'count'}).select('product_title_key', 'parola', 'count')
 
