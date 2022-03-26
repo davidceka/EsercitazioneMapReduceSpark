@@ -10,8 +10,7 @@ def func(line):
     parole = []
 
     for parola in review_headline:
-        if len(parola)>=5 and parola not in review_body:
-            if parola not in product_title:
+        if len(parola)>=5 and parola not in product_title:
                 parole.append(parola)
     for parola in review_body:
         if len(parola)>=5 and parola not in product_title:
@@ -58,11 +57,9 @@ df_prodotti = spark.createDataFrame(prodotti)
 
 prova = valid_parts.map(lambda line: func(line))
 prova2 = prova.reduceByKey(func2, 48)
-prova3 = prova2.flatMap(lambda a: (a[0], a[1]))
 prova3 = prova2.map(lambda e: func3(e), preservesPartitioning=True).map(lambda p: Row(product_title=p[0], max_parola=p[1], max_occ=p[2]))
 
 df_prova = spark.createDataFrame(prova3)
-
 
 
 
