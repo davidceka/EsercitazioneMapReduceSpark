@@ -5,6 +5,10 @@ from pyspark.sql.functions import explode, col, length, count, max, round, broad
 """
 ATTENZIONE: se script da errori relativi allo spilling dei DataFrame in memoria, aumentare la RAM disponibile nelle impostazioni di spark: $SPARK_HOME/conf/spark_defaults.conf
 """
+
+"""
+Inizializzazione
+"""
 spark = SparkSession.builder.appName("Spark - Esercitazione Gruppo3").config("spark.some.config.option", "some-value").getOrCreate()
 
 sc = spark.sparkContext
