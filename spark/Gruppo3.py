@@ -9,7 +9,7 @@ ATTENZIONE: se script da errori relativi allo spilling dei DataFrame in memoria,
 """
 Inizializzazione
 """
-spark = SparkSession.builder.appName("Spark - Esercitazione Gruppo3").config("spark.some.config.option", "some-value").getOrCreate()
+spark = SparkSession.builder.appName("Spark - Esercitazione Gruppo3").getOrCreate()
 
 sc = spark.sparkContext
 sqlContext = SQLContext(sc)
