@@ -1,4 +1,3 @@
-from itertools import count
 from pyspark.sql import SparkSession
 from pyspark.sql import SQLContext
 from pyspark.sql.functions import explode, col, length, count, max, round, broadcast, lower, split
