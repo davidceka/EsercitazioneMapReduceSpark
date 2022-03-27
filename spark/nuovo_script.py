@@ -16,14 +16,14 @@ sqlContext = SQLContext(sc)
 
 
 """
-Lettura utilizzando funzione SparkSession.read per ottenere direttamente un DataFrame senza necessità di filtrare l'header
+Utilizzo della funzione SparkSession.read per ottenere il DataFrame senza che sia necessario filtrare l'header
 """
 #testo = spark.read.format("tsv").option("sep", "\t").option("header", "true").csv("/home/dave/EsercitazioneMapReduceSPark/spark/amazon_reviews_us_Video_Games_v1_00.tsv")
 testo = spark.read.format("tsv").option("sep", "\t").option("header", "true").csv("hdfs://192.168.104.45:9000/test.tsv")
 
 
 """
-Select per eliminare le colonne del dataset che non ci interessano e preparare i tipi dei dati nelle colonne agli step successivi
+Selezione delle colonne d'interesse nel dataset e preparazione dei tipi dei dati nelle colonne per gli step successivi
 """
 df_testo = testo.select(col("product_title").alias("product_title_key"),
                         split(lower(col("product_title")), ' ').alias("product_title_field"),
@@ -34,7 +34,7 @@ df_testo = testo.select(col("product_title").alias("product_title_key"),
 
 
 """
-Conteggio delle occorrenze dei product title e filtraggio dei prodotti che hanno meno di 10 recensioni attraverso un innerJoin
+Conteggio delle occorrenze dei product title e filtraggio dei prodotti con meno di 10 recensioni mediante un innerJoin
 """
 df_occ_pt = df_testo.groupBy("product_title_key").agg(count('*').alias('conteggio_pt')).filter(col('conteggio_pt')>=10)
 df_testo = df_testo.join(broadcast(df_occ_pt), ['product_title_key'], 'inner')
@@ -47,15 +47,15 @@ df_testo.createOrReplaceTempView("prodotti")
 
 
 """
-Settaggio dei DataFrame che non verranno più utilizzati su non persistenti per risparmiare memoria (accelera la computazione se macchina spark ha poca ram, nessun cambiamento altrimenti)
+Settaggio ad unpersistent dei DataFrame che non verranno più utilizzati per risparmiare memoria (accelera la computazione se la macchina spark ha poca ram, nessun cambiamento altrimenti)
 """
 df_occ_pt.unpersist()
 df_testo.unpersist()
 
 
 """
-Explode dei campi product_title, review_headline, review_body con chiave product_title_key per ottenere un dataframe che ad ogni recensione faccia corrispondere le parole del rispettivo
-campo della stessa. 
+Explode dei campi product_title, review_headline, review_body con chiave product_title_key per ottenere un dataframe che associa ad ogni recensione le parole del rispettivo
+campo. 
 """
 df_product_title = df_testo.select(df_testo.product_title_key, explode(df_testo.product_title_field).alias('parola')).where(length(col('parola'))>=5)
 df_review_headline = df_testo.select(df_testo.product_title_key, explode(df_testo.review_headline).alias('parola')).filter(length(col('parola'))>=5)
@@ -77,19 +77,19 @@ df_testo_joined = df_review_text.join(broadcast(df_product_title), ['product_tit
 
 
 """
-Conteggio delle parole su aggregazione in base al product_title
+Conteggio delle parole sull'aggregazione in base al product_title
 """
 df_testo_contato = df_testo_joined.groupBy('product_title_key', 'parola').agg(count('*').alias('occorrenza')).cache()
 
 
 """
-Ragruppamento ulteriore per ottenere la parola con occorrenza massima
+Ulteriore raggruppamento per ottenere la parola con occorrenza massima
 """
 df_contato_maxed = df_testo_contato.groupBy('product_title_key').agg(max('occorrenza').alias('max_occorrenza'))
 
 
 """
-Join per recuperare info sulla parola perse a causa del GroupBy precedente e settaggio ad unpersistent
+Join per recuperare informazioni sulle parole perse a causa del precedente GroupBy e settaggio ad unpersistent
 dei DataFrame non più utili
 """
 df_contato_maxed = df_contato_maxed.withColumnRenamed('product_title_key', 'new_ptk')
@@ -99,13 +99,13 @@ df_contato_maxed.unpersist()
 
 
 """
-Select per evidenziare i campi product_title, parola con occorrenza massima e sua occorrenza
+Seleczione per evidenziare i campi product_title, la parola con occorrenza massima e l'occorrenza stessa
 """
 parziale=df_contato_joined.select("new_ptk","parola","occorrenza")
 
 
 """
-Calcolo della media per star rating
+Calcolo della media dello star rating
 """
 tabella_average=spark.sql("SELECT first(conteggio_pt) as occorrenze_product_title,avg(star_rating) as star_rating_medio,product_title_key FROM prodotti group by product_title_key")
 
@@ -120,7 +120,7 @@ tabella_average.unpersist()
 
 
 """
-Generazione del file di output effettuando il repartition della tabella finale ad un un'unica partizione
+Generazione del file di output effettuando il repartition della tabella finale su un un'unica partizione
 in modo da ottenere un singolo file.csv all'interno della cartella Gruppo3
 """
 #finale.repartition(1).write.csv("gruppo3", mode='overwrite')
