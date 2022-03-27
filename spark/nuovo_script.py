@@ -5,11 +5,7 @@ from pyspark.sql.functions import explode, col, length, count, max, round, broad
 import time
 
 start_time = time.time()
-spark = SparkSession \
-.builder \
-.appName("Python Spark SQL basic example") \
-.config("spark.some.config.option", "some-value") \
-.getOrCreate()
+spark = SparkSession.builder.appName("Python Spark SQL basic example").config("spark.some.config.option", "some-value").getOrCreate()
 
 sc = spark.sparkContext
 sqlContext = SQLContext(sc)
@@ -49,10 +45,10 @@ df_contato_maxed.unpersist()
 
 parziale=df_contato_joined.select("new_ptk","parola","occorrenza")
 tabella_average=spark.sql("SELECT first(conteggio_pt) as occorrenze_product_title,avg(star_rating) as star_rating_medio,product_title_key FROM prodotti group by product_title_key")
-finale=parziale.join(tabella_average,parziale.new_ptk==tabella_average.product_title_key).select("product_title_key",round("star_rating_medio",1).alias("star_rating_medio"),"occorrenze_product_title","parola","occorrenza").sort(col("star_rating_medio"),col("occorrenze_product_title"), ascending=[0,0])
+finale=parziale.join(tabella_average,parziale.new_ptk==tabella_average.product_title_key).select("product_title_key",round("star_rating_medio",1).alias("star_rating_medio"),"occorrenze_product_title","parola","occorrenza").sort(col("star_rating_medio"),col("occorrenze_product_title"), ascending=[0,0]).cache()
 parziale.unpersist()
 tabella_average.unpersist()
 
-finale.show(5)
+
+finale.write.csv("gruppo3", mode='overwrite')
 print("--- %s seconds ---" % (time.time() - start_time))
-exit()
